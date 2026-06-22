@@ -1,0 +1,373 @@
+/* Color Variables */
+:root {
+    --gold: #D4AF37;
+    --navy: #0A1F44;
+    --white: #FFFFFF;
+    --black: #111111;
+    --transition: all 0.3s ease;
+}
+
+html, body {
+    max-width: 100vw;
+    overflow-x: hidden;
+    position: relative;
+    width: 100%;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    color: var(--black);
+}
+h1, h2, h3, .navbar-brand {
+    font-family: 'Playfair Display', serif;
+}
+
+.gold-text { color: var(--gold); }
+.navy-text { color: var(--navy); }
+.navy-bg { background-color: var(--navy); }
+.gold-line {
+    width: 60px;
+    height: 3px;
+    background: var(--gold);
+    margin: 15px 0;
+}
+
+/* Navbar */
+.navbar {
+    background-color: var(--navy);
+    padding: 15px 0;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.nav-link {
+    color: var(--white) !important;
+    font-weight: 500;
+    margin: 0 10px;
+}
+
+.nav-link:hover {
+    color: var(--gold) !important;
+}
+
+/* Buttons */
+.btn-gold {
+    background-color: var(--gold);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 5px;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.btn-gold:hover {
+    background-color: #b8952d;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.btn-navy {
+    background-color: var(--navy);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+}
+
+.btn-navy:hover {
+    background-color: #0d2a5c;
+    color: white;
+}
+
+/* Hero Section */
+.hero-section {
+    height: 100vh;
+    background: linear-gradient(rgba(10, 31, 68, 0.7), rgba(10, 31, 68, 0.7)), 
+                url('https://images.unsplash.com/photo-1436491865332-7a61a109c055?auto=format&fit=crop&w=1920');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+/* Service Cards */
+.service-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 10px;
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.service-card:hover {
+    background: var(--gold);
+    transform: translateY(-10px);
+}
+
+.service-card:hover i, .service-card:hover h5 {
+    color: var(--navy) !important;
+}
+
+/* Destination Cards */
+.dest-card {
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    height: 350px;
+}
+
+.dest-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.dest-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    padding: 20px;
+    color: white;
+}
+
+.dest-card:hover img {
+    transform: scale(1.1);
+}
+
+/* WhatsApp Float */
+.whatsapp-float {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background-color: #25d366;
+    color: white;
+    width: 60px;
+    height: 60px;
+    border-radius: 50px;
+    text-align: center;
+    font-size: 30px;
+    box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.whatsapp-float:hover {
+    color: white;
+    background-color: #1ebe57;
+}
+
+/* Accordion */
+.accordion-button:not(.collapsed) {
+    background-color: var(--navy);
+    color: var(--gold);
+}
+
+.border-gold {
+    border: 1px solid var(--gold) !important;
+}
+
+.navy-filter {
+    filter: invert(13%) sepia(50%) saturate(3474%) hue-rotate(205deg) brightness(95%) contrast(97%);
+}
+.success-box{
+    background:#d4edda;
+    color:#155724;
+    padding:15px;
+    border-radius:10px;
+    margin-top:20px;
+}
+
+.error-text{
+    color:red;
+    font-size:13px;
+}
+/* Fix for international phone input scaling */
+.intl-phone-wrapper .iti {
+    width: 100% !important;
+    display: block !important;
+}
+/* Hot Flight Offers Styling */
+.hot-offer-card {
+    border: 2px solid rgba(212, 175, 55, 0.2);
+    border-radius: 15px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.hot-offer-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 30px rgba(212, 175, 55, 0.25);
+    border-color: var(--gold);
+}
+
+.card-header-luxury {
+    background-color: var(--navy);
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--gold);
+}
+
+.airline-brand {
+    color: var(--white);
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.plane-connector {
+    position: relative;
+    width: 40%;
+    border-bottom: 2px dashed #ccc;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.plane-connector i {
+    position: absolute;
+    top: -9px;
+    left: 45%;
+    background: #fff;
+    padding: 0 5px;
+}
+
+.flight-details-list li {
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+}
+
+.price-box-container {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 12px 5px;
+}
+/* Card Admin Overlay Controls */
+.admin-card-badge {
+    position: absolute;
+    top: 55px;
+    right: 15px;
+    z-index: 10;
+}
+
+.card-header-luxury {
+    position: relative;
+    background-color: var(--navy);
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--gold);
+}
+
+.hot-offer-card {
+    position: relative;
+    border: 2px solid rgba(212, 175, 55, 0.2);
+    border-radius: 15px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    background: #fff;
+}
+
+.hot-offer-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(212, 175, 55, 0.25);
+    border-color: var(--gold);
+}
+
+.plane-connector {
+    position: relative;
+    width: 35%;
+    border-bottom: 2px dashed #ccc;
+    margin-bottom: 15px;
+}
+
+.plane-connector i {
+    position: absolute;
+    top: -9px;
+    left: 40%;
+    background: #fff;
+    padding: 0 5px;
+}
+
+.price-box-container {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 12px 5px;
+}
+/* ===================================================
+   ADMIN PORTAL: OFFERS STOPS INPUT BOX
+   =================================================== */
+#offerStops {
+    background-color: #ffffff !important;
+    color: #0A1F44 !important;
+    border: 2px solid rgba(10, 31, 68, 0.15) !important;
+    font-weight: 500;
+}
+
+#offerStops:focus {
+    border-color: #D4AF37 !important; /* Gold border focus */
+    box-shadow: 0 0 0 0.25rem rgba(212, 175, 55, 0.25) !important;
+}
+
+/* ===================================================
+   FLIGHT CARDS: STOPS & ROUTING TEXT STYLING
+   =================================================== */
+/* Premium Stop Badge Colors */
+.bg-success-subtle {
+    background-color: #e8f5e9 !important;
+    color: #2e7d32 !important;
+}
+
+.bg-warning-subtle {
+    background-color: #fff3e0 !important;
+    color: #ef6c00 !important;
+}
+
+/* Ensures the text description in the list is clearly visible */
+.flight-details-list li {
+    font-size: 0.95rem;
+    color: #2b3e50 !important; /* Rich Dark Charcoal for visibility */
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+}
+
+.flight-details-list li strong {
+    color: #0A1F44 !important; /* Navy Blue color for label tags */
+    margin-right: 5px;
+}
+
+/* Specific text visibility boost for the routing row */
+.flight-details-list li .routing-highlight {
+    font-weight: 600;
+    color: #0A1F44 !important;
+}
+#offerStops, #editOfferStops {
+    background-color: #ffffff !important;
+    color: #0A1F44 !important;
+    border: 2px solid rgba(10, 31, 68, 0.15) !important;
+    font-weight: 500;
+}
+
+#offerStops:focus, #editOfferStops:focus {
+    border-color: #D4AF37 !important;
+    box-shadow: 0 0 0 0.25rem rgba(212, 175, 55, 0.25) !important;
+}
+@media (min-width: 768px) {
+    .border-end-md {
+        border-right: 1px solid #eee !important;
+    }
+}
+.flight-card-item .card:hover {
+    transform: translateY(-2px);
+    border-color: #0A1F44 !important;
+}
+.gold-text {
+    color: #D4AF37 !important;
+}
