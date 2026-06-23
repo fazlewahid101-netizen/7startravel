@@ -84,14 +84,16 @@
                 <div class="gold-line mx-auto"></div>
             </div>
 
-            <!--  Controls Button (Hidden by default, shown if logged in) -->
+            <!-- Founder Controls Button (Hidden by default, shown if logged in) -->
             <div class="text-end mb-4 d-none" id="adminControlPanel">
-                <button class="btn btn-navy me-2" data-bs-toggle="modal" data-bs-target="#addOfferModal">
-                    <i class="fas fa-plus-circle me-2"></i> Add New Offer
-                </button>
-                <button class="btn btn-outline-danger" id="logoutAdminBtn">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </button>
+                <div class="admin-control-panel d-inline-flex align-items-center gap-2 p-3 rounded-4 shadow-sm">
+                    <button class="btn btn-admin-primary" data-bs-toggle="modal" data-bs-target="#addOfferModal">
+                        <i class="fas fa-plus-circle me-2"></i> Add New Offer
+                    </button>
+                    <button class="btn btn-admin-logout" id="logoutAdminBtn">
+                        <i class="fas fa-sign-out-alt me-2"></i> Logout
+                    </button>
+                </div>
             </div>
 
             <!-- FLIGHT SEARCH FILTER BOX -->
@@ -164,7 +166,7 @@
         </div>
     </section>
 
-    <!-- MODAL 1:  LOGIN -->
+    <!-- MODAL 1: FOUNDER LOGIN -->
     <div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-gold">

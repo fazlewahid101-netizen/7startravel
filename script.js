@@ -445,17 +445,19 @@ function displayFlightOffers() {
             
             let categorySectionHTML = `
                 <div class="col-12 mt-4 route-category-section" data-route="${routeKey.toLowerCase()}">
-                    <div class="d-flex align-items-center mb-3 border-bottom pb-2">
-                        <div class="p-2 bg-primary text-white rounded-3 me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background-color: #0A1F44 !important;">
-                            <i class="fas fa-route fs-6 text-warning"></i>
+                    <div class="d-flex align-items-center mb-3 border-bottom pb-2 justify-content-between flex-wrap">
+                        <div class="d-flex align-items-center">
+                            <div class="p-2 bg-primary text-white rounded-3 me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background-color: #0A1F44 !important;">
+                                <i class="fas fa-route fs-6 text-warning"></i>
+                            </div>
+                            <div>
+                                <h4 class="fw-bold mb-0 text-uppercase" style="color: #0A1F44; font-size: 1.25rem;">${group.depCode} to ${group.destCode}</h4>
+                                <small class="text-muted">${group.depCity} To ${group.destCity}</small>
+                            </div>
                         </div>
-                        <div>
-                            <h4 class="fw-bold mb-0 text-uppercase" style="color: #0A1F44; font-size: 1.25rem;">${group.depCode} to ${group.destCode} </h4>
-                            <small class="text-muted">${group.depCity} To ${group.destCity} </small>
-                        </div>
+                        ${currentUser ? `<button class="btn btn-sm btn-outline-danger btn-admin-category-delete" type="button" onclick="deleteRouteOffers('${routeKey.toLowerCase()}')"><i class="fas fa-trash-alt me-1"></i> Delete Route</button>` : ''}
                     </div>
                     <div class="d-flex flex-column gap-3 route-flights-list">`;
-
             group.flights.forEach((offer) => {
                 const formattedPKR = Number(offer.pkr).toLocaleString();
                 const formattedAED = Number(offer.aed).toLocaleString();
@@ -487,6 +489,7 @@ function displayFlightOffers() {
                 // Fully Responsive Space-Saving Horizontal Row Layout
                 categorySectionHTML += `
                     <div class="flight-card-item" 
+                         data-offer-id="${offer.id}"
                          data-dep-code="${offer.depCode}" 
                          data-dep-city="${offer.depCity}" 
                          data-dest-code="${offer.destCode}" 
@@ -546,6 +549,42 @@ function displayFlightOffers() {
         }
     });
 }
+
+window.deleteRouteOffers = function(routeKey) {
+    const categorySection = document.querySelector(`.route-category-section[data-route="${routeKey}"]`);
+    if (!categorySection) return;
+
+    const offerCards = categorySection.querySelectorAll('.flight-card-item[data-offer-id]');
+    if (offerCards.length === 0) {
+        alert('No offers available for this route to delete.');
+        return;
+    }
+
+    if (!confirm(`Delete all ${offerCards.length} offer(s) for route ${routeKey.toUpperCase()}? This cannot be undone.`)) {
+        return;
+    }
+
+    const nameSignature = auth.currentUser ? auth.currentUser.email.split('@')[0].toUpperCase() : 'ADMIN';
+    const displayName = nameSignature === 'FAZAL0WAHID' ? 'FAZAL' : nameSignature;
+    const batch = db.batch();
+    offerCards.forEach((card) => {
+        const offerId = card.dataset.offerId;
+        if (offerId) {
+            batch.delete(db.collection('offers').doc(offerId));
+        }
+    });
+
+    batch.commit()
+        .then(() => {
+            alert(`${offerCards.length} offer(s) deleted for route ${routeKey.toUpperCase()}.`);
+            displayFlightOffers();
+            addSystemLog('DELETE', displayName, `Removed ${offerCards.length} offers from route ${routeKey.toUpperCase()}.`);
+        })
+        .catch((error) => {
+            console.error('Route delete failed:', error);
+            alert('Could not delete offers for this route. Please try again.');
+        });
+};
 
 // Secure core logging function pushes system records directly into Cloud Database
 function addSystemLog(actionType, userSignature, actionDetails) {
