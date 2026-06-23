@@ -925,7 +925,9 @@ window.duplicateOffer = function(cloudId) {
 // CUSTOM MULTI-LINE PASTE ENGINE (FIXED)
 // ===================================================
 function applySmartPaste(prefix) {
-    const rawTextElement = document.getElementById(`${prefix}SmartPasteBox`);
+    // Handle both smartPasteBox and editSmartPasteBox IDs
+    const rawTextElement = document.getElementById(`${prefix}SmartPasteBox`) || 
+                           document.getElementById(prefix === 'offer' ? 'smartPasteBox' : 'editSmartPasteBox');
     if (!rawTextElement) return;
 
     const rawText = rawTextElement.value.trim();
@@ -947,75 +949,133 @@ function applySmartPaste(prefix) {
         "SKT": "Sialkot"
     };
 
+    // 1. DATE PARSING: DD-MM-YYYY format
     const dateMatch = rawText.match(/(\d{2})-(\d{2})-(\d{4})/);
     if (dateMatch) {
         const dateInput = document.getElementById(`${prefix}Date`);
         if (dateInput) dateInput.value = `${dateMatch[3]}-${dateMatch[2]}-${dateMatch[1]}`;
     }
 
-    const routeMatch = rawText.match(/\b([A-Z]{3})-([A-Z]{3})\b/i);
+    // 2. ROUTE & FLIGHT PARSING: handles "PEW-SHJG9557" format
+    let depCode = "", destCode = "", flightNum = "";
+    
+    // Match route like "PEW-SHJ" optionally followed by flight number like "G9557"
+    const routeMatch = rawText.match(/([A-Z]{3})-([A-Z]{3})([A-Z0-9]*)/i);
     if (routeMatch) {
-        const dep = routeMatch[1].toUpperCase();
-        const dest = routeMatch[2].toUpperCase();
-
+        depCode = routeMatch[1].toUpperCase();
+        destCode = routeMatch[2].toUpperCase();
+        const attachedFlight = routeMatch[3];
+        
+        // Apply departure/destination codes and cities
         const depCodeInput = document.getElementById(`${prefix}DepCode`);
         const destCodeInput = document.getElementById(`${prefix}DestCode`);
         const depCityInput = document.getElementById(`${prefix}DepCity`);
         const destCityInput = document.getElementById(`${prefix}DestCity`);
 
-        if (depCodeInput) depCodeInput.value = dep;
-        if (destCodeInput) destCodeInput.value = dest;
-        if (depCityInput && cityMap[dep]) depCityInput.value = cityMap[dep];
-        if (destCityInput && cityMap[dest]) destCityInput.value = cityMap[dest];
+        if (depCodeInput) depCodeInput.value = depCode;
+        if (destCodeInput) destCodeInput.value = destCode;
+        if (depCityInput && cityMap[depCode]) depCityInput.value = cityMap[depCode];
+        if (destCityInput && cityMap[destCode]) destCityInput.value = cityMap[destCode];
+        
+        // If flight number attached to destination, use it
+        if (attachedFlight) {
+            flightNum = attachedFlight.toUpperCase();
+        }
     }
 
-    const flightMatch = rawText.match(/\b([A-Z0-9]{2,3}\s*\d{3,4})\b/i);
-    if (flightMatch) {
-        const cleanFlightNum = flightMatch[1].toUpperCase().replace(/\s+/g, '');
-        const flightNumInput = document.getElementById(`${prefix}FlightNum`);
-        if (flightNumInput) flightNumInput.value = cleanFlightNum;
+    // If no flight number found yet, search for standalone flight number pattern
+    if (!flightNum) {
+        const flightMatch = rawText.match(/\b([A-Z0-9]{2,3}\s*\d{3,4})\b/i);
+        if (flightMatch) {
+            flightNum = flightMatch[1].toUpperCase().replace(/\s+/g, '');
+        }
+    }
 
-        if (cleanFlightNum.startsWith('G9')) {
+    // Apply flight number if found
+    if (flightNum) {
+        const flightNumInput = document.getElementById(`${prefix}FlightNum`);
+        if (flightNumInput) flightNumInput.value = flightNum;
+
+        // Auto-detect airline from flight number prefix
+        if (flightNum.startsWith('G9')) {
             const airlineInput = document.getElementById(`${prefix}Airline`);
             if (airlineInput) airlineInput.value = "Air Arabia";
         }
     }
 
-    const timeMatch = rawText.match(/(\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})/);
+    // 3. TIME PARSING: HH:MM - HH:MM format
+    const timeMatch = rawText.match(/(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})/);
     if (timeMatch) {
+        const depTime = `${timeMatch[1].padStart(2, '0')}:${timeMatch[2]}`;
+        const arrTime = `${timeMatch[3].padStart(2, '0')}:${timeMatch[4]}`;
+        
         const timeInput = document.getElementById(`${prefix}Time`);
         const arrivalInput = document.getElementById(`${prefix}ArrivalTime`);
-        if (timeInput) timeInput.value = timeMatch[1];
-        if (arrivalInput) arrivalInput.value = timeMatch[2];
+        if (timeInput) timeInput.value = depTime;
+        if (arrivalInput) arrivalInput.value = arrTime;
     }
 
-    const baggageMatch = rawText.match(/(\d+\+\d+\s*KG|\d+\s*KG)/i);
+    // 4. BAGGAGE PARSING: 30 KG or 30+7 KG format
+    const baggageMatch = rawText.match(/(\d+)\+?(\d+)?\s*KG/i);
     if (baggageMatch) {
+        let baggageStr = baggageMatch[1];
+        if (baggageMatch[2]) {
+            baggageStr += '+' + baggageMatch[2];
+        }
+        baggageStr += ' KG';
+        
         const baggageInput = document.getElementById(`${prefix}Baggage`);
-        if (baggageInput) baggageInput.value = baggageMatch[1].toUpperCase();
+        if (baggageInput) baggageInput.value = baggageStr;
     }
 
-    const priceMatch = rawText.match(/(?:PKR|PRICE)?\s*[:\s]*([\d,]+)/i);
+    // 5. PRICE PARSING: Look for prices and "purchase price" indicators
+    const pkrInput = document.getElementById(`${prefix}Pkr`);
+    const aedInput = document.getElementById(`${prefix}Aed`);
+    const purchaseRateInput = document.getElementById(`${prefix}PurchaseRate`);
+
     const lines = rawText.split('\n');
-    let rawPrice = "";
-    for (let i = lines.length - 1; i >= 0; i--) {
-        const cleanLine = lines[i].replace(/,/g, '').trim();
-        if (/^\d+$/.test(cleanLine)) {
-            rawPrice = cleanLine;
-            break;
+    let sellPrice = "";
+    let purchasePrice = "";
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        const priceMatch = line.match(/([\d,]+)/);
+
+        if (/(in\s+(?:the\s+)?(?:pkr|purchase|price)|purchase\s+price|selling\s+price)/i.test(line)) {
+            if (priceMatch) {
+                purchasePrice = priceMatch[1].replace(/,/g, '');
+            }
         }
     }
 
-    const pkrInput = document.getElementById(`${prefix}Pkr`);
-    const aedInput = document.getElementById(`${prefix}Aed`);
+    for (let i = lines.length - 1; i >= 0; i--) {
+        const cleanLine = lines[i].replace(/[^\d]/g, '').trim();
+        if (cleanLine && /^\d+$/.test(cleanLine)) {
+            const origLine = lines[i].trim();
+            if (!/(in\s+(?:the\s+)?(?:pkr|purchase|price)|purchase\s+price)/i.test(origLine)) {
+                sellPrice = cleanLine;
+                break;
+            }
+        }
+    }
 
-    if (rawPrice) {
-        if (pkrInput) pkrInput.value = rawPrice;
-        if (aedInput) aedInput.value = Math.round(Number(rawPrice) / 77);
-    } else if (priceMatch) {
-        const cleanPrice = priceMatch[1].replace(/,/g, '');
-        if (pkrInput) pkrInput.value = cleanPrice;
-        if (aedInput) aedInput.value = Math.round(Number(cleanPrice) / 77);
+    if (purchasePrice && purchaseRateInput) {
+        purchaseRateInput.value = purchasePrice;
+    }
+
+    if (sellPrice && pkrInput) {
+        pkrInput.value = sellPrice;
+        if (aedInput) aedInput.value = Math.round(Number(sellPrice) / 77);
+    }
+
+    // When editing, recalculate AED if PKR changes
+    if (pkrInput && aedInput) {
+        pkrInput.addEventListener('input', function() {
+            const value = Number(this.value.replace(/,/g, ''));
+            if (!Number.isNaN(value)) {
+                aedInput.value = Math.round(value / 77);
+            }
+        });
     }
 }
 
@@ -1026,3 +1086,552 @@ window.processMyFlight = function() {
 window.processEditFlight = function() {
     applySmartPaste('editOffer');
 };
+
+// ===================================================
+// BULK UPLOAD SYSTEM (Multiple Offers from Table)
+// ===================================================
+let pendingBulkOffers = [];
+
+window.processBulkFlights = function() {
+    const smartPasteBox = document.getElementById('smartPasteBox');
+    if (!smartPasteBox || !smartPasteBox.value.trim()) {
+        alert("Please paste flight data first!");
+        return;
+    }
+
+    const rawText = smartPasteBox.value.trim();
+    pendingBulkOffers = [];
+
+    const cityMap = {
+        "PEW": "Peshawar", "SHJ": "Sharjah", "LHE": "Lahore", "DMM": "Dammam",
+        "DXB": "Dubai", "JED": "Jeddah", "ISB": "Islamabad", "KHI": "Karachi",
+        "MUX": "Multan", "SKT": "Sialkot"
+    };
+
+    const blocks = splitBulkTextIntoBlocks(rawText);
+    console.log(`Processing ${blocks.length} offer block(s)...`);
+
+    blocks.forEach((block, blockIndex) => {
+        const lines = block.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        try {
+            const offer = parseBulkBlock(lines, cityMap) || parseBulkLineFallback(block, cityMap);
+            if (offer && offer.date && offer.depCode) {
+                pendingBulkOffers.push(offer);
+                console.log(`✓ Parsed offer ${pendingBulkOffers.length}:`, offer);
+            } else {
+                console.log(`Block ${blockIndex} skipped, could not parse.`, lines);
+            }
+        } catch (e) {
+            console.log(`Could not parse block ${blockIndex}:`, lines, e.message);
+        }
+    });
+
+    if (pendingBulkOffers.length === 0) {
+        alert("Could not parse any flight offers.\n\nExpected format:\nDATE\nROUTE\nFLIGHT#\nTIME - TIME\nBAGGAGE\nPKR\nPRICE\n\nExample:\n24-06-2026\nPEW-SHJ\nG9555\n07:30 - 09:30\n20+7 KG\nPKR\n90,000\n\nSeparate each offer with an empty line.");
+        return;
+    }
+
+    console.log(`Total offers parsed: ${pendingBulkOffers.length}`);
+    showBulkApprovalModal();
+};
+
+function splitBulkTextIntoBlocks(rawText) {
+    const cleaned = rawText.replace(/\r/g, '');
+    const blocks = cleaned.split(/\n\s*\n+/).map(block => block.trim()).filter(Boolean);
+    if (blocks.length > 1) {
+        return blocks;
+    }
+
+    const lines = blocks.length === 1 ? blocks[0].split('\n').map(l => l.trim()).filter(Boolean) : [];
+    const grouped = [];
+    let index = 0;
+
+    while (index < lines.length) {
+        if (/^\d{2}-\d{2}-\d{4}$/.test(lines[index]) && index + 4 < lines.length) {
+            let blockSize = 6;
+            if (index + 6 < lines.length && /^PKR$/i.test(lines[index + 5])) {
+                blockSize = 7;
+            }
+            grouped.push(lines.slice(index, index + blockSize).join('\n'));
+            index += blockSize;
+            continue;
+        }
+        index++;
+    }
+
+    return grouped.length > 1 ? grouped : blocks;
+}
+
+function parseBulkBlock(lines, cityMap) {
+    if (lines.length < 5) return null;
+
+    const dateLine = lines[0];
+    const routeLine = lines[1];
+    const flightNum = lines[2] ? lines[2].replace(/\s+/g, '').toUpperCase() : '';
+    const timeLine = lines[3] || '';
+    let baggageLine = lines[4] || '';
+    let priceLine = '';
+    let purchaseRate = '';
+    let stops = '';
+
+    if (lines[5]) {
+        if (/^PKR$/i.test(lines[5]) && lines[6]) {
+            priceLine = lines[6];
+            purchaseRate = lines[6].replace(/,/g, '').trim();
+        } else if (/^PKR/i.test(lines[5])) {
+            priceLine = lines[5].replace(/PKR/i, '').trim();
+        } else {
+            priceLine = lines[5];
+        }
+    }
+
+    const routeMatch = routeLine.match(/^([A-Z]{3})-([A-Z]{3})$/i);
+    if (!dateLine || !routeMatch || !flightNum || !timeLine || !baggageLine || !priceLine) {
+        return null;
+    }
+
+    const depCode = routeMatch[1].toUpperCase();
+    const destCode = routeMatch[2].toUpperCase();
+    const depCity = cityMap[depCode] || depCode;
+    const destCity = cityMap[destCode] || destCode;
+
+    const dateMatch = dateLine.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+    const date = dateMatch ? `${dateMatch[3]}-${dateMatch[2]}-${dateMatch[1]}` : '';
+
+    const timeMatch = timeLine.match(/(\d{1,2}:\d{2})\s*[-–]\s*(\d{1,2}:\d{2})/);
+    const depTime = timeMatch ? timeMatch[1] : '';
+    const arrTime = timeMatch ? timeMatch[2] : '';
+
+    baggageLine = baggageLine.toUpperCase().replace(/\s*KG\s*$/, ' KG');
+    const pkr = priceLine.replace(/,/g, '').replace(/PKR/i, '').trim();
+
+    return {
+        airline: flightNum.substring(0, 2) === 'G9' ? 'Air Arabia' : 'PIA',
+        depCode,
+        destCode,
+        depCity,
+        destCity,
+        date,
+        time: depTime,
+        arrivalTime: arrTime,
+        flightNum,
+        baggage: baggageLine,
+        stops,
+        pkr,
+        aed: Math.round(Number(pkr) / 77).toString(),
+        purchaseRate: purchaseRate || "",
+        selected: true
+    };
+}
+
+function parseBulkLineFallback(block, cityMap) {
+    const line = block.replace(/\n/g, ' ').replace(/\s{2,}/g, ' ').trim();
+    let parts = [];
+    if (line.includes('\t')) {
+        parts = line.split('\t').map(p => p.trim()).filter(p => p);
+    } else if (line.match(/\s{3,}/)) {
+        parts = line.split(/\s{3,}/).map(p => p.trim()).filter(p => p);
+    } else {
+        parts = parseFlightLineAdvanced(line);
+    }
+    return parts.length >= 5 ? parseFlightFromParts(parts, cityMap) : null;
+}
+
+function syncBulkEditAed(index) {
+    const pkrInput = document.getElementById(`editPkr_${index}`);
+    const aedInput = document.getElementById(`editAed_${index}`);
+    if (pkrInput && aedInput) {
+        const value = Number(pkrInput.value.replace(/,/g, ''));
+        if (!Number.isNaN(value)) {
+            aedInput.value = Math.round(value / 77);
+        }
+    }
+}
+
+function parseFlightLineAdvanced(line) {
+    // Enhanced parsing to extract data from various formats
+    const parts = [];
+    
+    // Extract date: DD-MM-YYYY
+    const dateMatch = line.match(/(\d{2})-(\d{2})-(\d{4})/);
+    if (dateMatch) parts.push(dateMatch[0]);
+    
+    // Extract route: XXX-YYY
+    const routeMatch = line.match(/([A-Z]{3})-([A-Z]{3})/i);
+    if (routeMatch) parts.push(routeMatch[0]);
+    
+    // Extract flight number: Letter/Number combo
+    const flightMatch = line.match(/([A-Z0-9]{2,3}\s*\d{3,4})/i);
+    if (flightMatch) parts.push(flightMatch[1].replace(/\s+/g, ''));
+    
+    // Extract time range: HH:MM - HH:MM or HH:MM- HH:MM
+    const timeMatch = line.match(/(\d{1,2}):(\d{2})\s*[-–]\s*(\d{1,2}):(\d{2})/);
+    if (timeMatch) {
+        const depTime = `${timeMatch[1].padStart(2, '0')}:${timeMatch[2]}`;
+        const arrTime = `${timeMatch[3].padStart(2, '0')}:${timeMatch[4]}`;
+        parts.push(`${depTime}-${arrTime}`);
+    }
+    
+    // Extract baggage: XX KG or XX+XX KG (more flexible)
+    const baggageMatch = line.match(/(\d+)(\+\d+)?\s*KG/i);
+    if (baggageMatch) parts.push(baggageMatch[0]);
+    
+    // Extract stops info (NO, Direct, Yes, or number)
+    const stopsMatch = line.match(/(NO|Direct|Yes|\d+\s*stop)/i);
+    if (stopsMatch) parts.push(stopsMatch[1]);
+    
+    // Extract price - look for PKR prefix or last number
+    const priceMatch = line.match(/(?:PKR\s+)?([\d,]+)(?:\s*$|\s+(?:in|for|price))?/i);
+    if (priceMatch) {
+        parts.push(priceMatch[1]);
+    }
+    
+    return parts;
+}
+
+function parseFlightFromParts(parts, cityMap) {
+    let dateStr = "", route = "", flightNum = "", timeRange = "", baggage = "", stops = "NO", priceStr = "";
+    
+    // Assign parts based on patterns
+    parts.forEach((part) => {
+        if (!dateStr && /\d{2}-\d{2}-\d{4}/.test(part)) {
+            dateStr = part;
+        } else if (!route && /^[A-Z]{3}-[A-Z]{3}$/i.test(part)) {
+            route = part;
+        } else if (!flightNum && /^[A-Z0-9]{2,3}\d{3,4}$/i.test(part)) {
+            flightNum = part;
+        } else if (!timeRange && /\d{1,2}:\d{2}.*[-–].*\d{1,2}:\d{2}/.test(part)) {
+            timeRange = part;
+        } else if (!baggage && /\d+.*KG/i.test(part)) {
+            baggage = part;
+        } else if (!stops && /(NO|Direct|Yes|\d+\s*stop)/i.test(part)) {
+            stops = part;
+        } else if (!priceStr && /^\d+/.test(part)) {
+            priceStr = part;
+        }
+    });
+
+    if (!dateStr || !route || !flightNum) {
+        console.log("Missing required fields:", {dateStr, route, flightNum});
+        return null;
+    }
+
+    // Parse date (DD-MM-YYYY to YYYY-MM-DD)
+    const dateMatch = dateStr.match(/(\d{2})-(\d{2})-(\d{4})/);
+    const date = dateMatch ? `${dateMatch[3]}-${dateMatch[2]}-${dateMatch[1]}` : '';
+
+    // Parse route (ISB-SHJ)
+    const routeMatch = route.match(/([A-Z]{3})-([A-Z]{3})/i);
+    const depCode = routeMatch ? routeMatch[1].toUpperCase() : '';
+    const destCode = routeMatch ? routeMatch[2].toUpperCase() : '';
+
+    // Parse times (06:00 - 08:15)
+    const timeMatches = timeRange.match(/(\d{1,2}):(\d{2})\s*[-–]\s*(\d{1,2}):(\d{2})/);
+    const depTime = timeMatches ? `${timeMatches[1].padStart(2, '0')}:${timeMatches[2]}` : '';
+    const arrTime = timeMatches ? `${timeMatches[3].padStart(2, '0')}:${timeMatches[4]}` : '';
+
+    // Parse baggage
+    const baggageStr = baggage ? baggage.toUpperCase() : '20 KG';
+
+    // Parse price (extract just numbers and remove commas)
+    const pkr = priceStr.replace(/,/g, '') || '0';
+
+    if (!date || !depCode || !destCode || !flightNum || !depTime) {
+        console.log("Invalid offer after parsing:", {date, depCode, destCode, flightNum, depTime});
+        return null;
+    }
+
+    return {
+        airline: flightNum.substring(0, 2) === 'G9' ? 'Air Arabia' : 'PIA',
+        depCode: depCode,
+        destCode: destCode,
+        depCity: cityMap[depCode] || depCode,
+        destCity: cityMap[destCode] || destCode,
+        date: date,
+        time: depTime,
+        arrivalTime: arrTime,
+        flightNum: flightNum,
+        baggage: baggageStr,
+        stops: stops === 'NO' || stops === 'Direct' ? '' : stops,
+        pkr: pkr,
+        aed: Math.round(Number(pkr) / 77).toString(),
+        selected: true
+    };
+}
+
+function showBulkApprovalModal() {
+    renderBulkApprovalList();
+    const modalElement = document.getElementById('bulkApprovalModal');
+    if (modalElement && typeof bootstrap !== 'undefined') {
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+    }
+}
+
+function renderBulkApprovalList() {
+    const offersList = document.getElementById('bulkOffersList');
+    const countSpan = document.getElementById('bulkOfferCount');
+
+    offersList.innerHTML = '';
+    countSpan.textContent = pendingBulkOffers.length;
+
+    pendingBulkOffers.forEach((offer, index) => {
+        const offerId = `offer_${index}`;
+        const formattedPKR = Number(offer.pkr).toLocaleString();
+        const formattedAED = Number(offer.aed).toLocaleString();
+
+        const offerHTML = `
+            <div class="bulk-offer-card" id="card_${index}">
+                <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+                    <div class="form-check flex-grow-1">
+                        <input class="form-check-input offer-checkbox" type="checkbox" id="${offerId}" data-index="${index}" checked>
+                        <label class="form-check-label bulk-offer-summary" for="${offerId}">
+                            <strong>${offer.date}</strong> • ${offer.depCode} → ${offer.destCode}
+                            <div class="text-muted mt-1">
+                                ${offer.airline} | ${offer.flightNum} | ${offer.time}${offer.arrivalTime ? ' - ' + offer.arrivalTime : ''}
+                                <br>
+                                ${offer.baggage} | ${offer.stops || 'Direct'} | PKR ${formattedPKR} • AED ${formattedAED}
+                            </div>
+                        </label>
+                    </div>
+                    <div class="bulk-offer-actions d-flex gap-2">
+                        <button class="btn btn-sm btn-warning" type="button" onclick="editBulkOffer(${index})" title="Edit this offer">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-secondary" type="button" onclick="duplicateBulkOffer(${index})" title="Duplicate this offer">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" type="button" onclick="deleteBulkOffer(${index})" title="Delete this offer">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        offersList.insertAdjacentHTML('beforeend', offerHTML);
+    });
+}
+
+window.duplicateBulkOffer = function(index) {
+    const offer = pendingBulkOffers[index];
+    const duplicate = JSON.parse(JSON.stringify(offer));
+    pendingBulkOffers.splice(index + 1, 0, duplicate);
+    renderBulkApprovalList();
+    alert('✅ Offer duplicated. You can edit it before publishing.');
+};
+
+window.deleteBulkOffer = function(index) {
+    if (!confirm('Are you sure you want to delete this offer from the approval list?')) {
+        return;
+    }
+    pendingBulkOffers.splice(index, 1);
+    renderBulkApprovalList();
+    alert('🗑️ Offer deleted from approval list.');
+};
+
+window.editBulkOffer = function(index) {
+    const offer = pendingBulkOffers[index];
+    const card = document.getElementById(`card_${index}`);
+    if (!card) return;
+    if (document.getElementById(`editOffersForm_${index}`)) return;
+
+    const editHTML = `
+        <div id="editOffersForm_${index}" class="card p-3 bg-light mb-2 border border-warning">
+            <h6 class="mb-3 fw-bold text-warning">✏️ Edit Offer ${index + 1}</h6>
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold">Airline</label>
+                    <input type="text" class="form-control form-control-sm" id="editAirline_${index}" value="${offer.airline || ''}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold">DEP Code</label>
+                    <input type="text" class="form-control form-control-sm" id="editDepCode_${index}" value="${offer.depCode}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold">DEST Code</label>
+                    <input type="text" class="form-control form-control-sm" id="editDestCode_${index}" value="${offer.destCode}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small fw-bold">Departure City</label>
+                    <input type="text" class="form-control form-control-sm" id="editDepCity_${index}" value="${offer.depCity || ''}">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label small fw-bold">Destination City</label>
+                    <input type="text" class="form-control form-control-sm" id="editDestCity_${index}" value="${offer.destCity || ''}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold">Flight Date</label>
+                    <input type="date" class="form-control form-control-sm" id="editDate_${index}" value="${offer.date}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold">Departure Time</label>
+                    <input type="time" class="form-control form-control-sm" id="editDepTime_${index}" value="${offer.time}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold">Arrival Time</label>
+                    <input type="time" class="form-control form-control-sm" id="editArrTime_${index}" value="${offer.arrivalTime || ''}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold">Flight Number</label>
+                    <input type="text" class="form-control form-control-sm" id="editFlightNum_${index}" value="${offer.flightNum}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold">Baggage</label>
+                    <input type="text" class="form-control form-control-sm" id="editBaggage_${index}" value="${offer.baggage}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold">Stops</label>
+                    <input type="text" class="form-control form-control-sm" id="editStops_${index}" value="${offer.stops || ''}" placeholder="Leave empty for Direct">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold">Price (PKR)</label>
+                    <input type="number" class="form-control form-control-sm" id="editPkr_${index}" value="${offer.pkr}" oninput="syncBulkEditAed(${index})">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold">Price (AED)</label>
+                    <input type="number" class="form-control form-control-sm" id="editAed_${index}" value="${offer.aed}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small fw-bold">Purchase Rate (PKR)</label>
+                    <input type="number" class="form-control form-control-sm" id="editPurchaseRate_${index}" value="${offer.purchaseRate || ''}" placeholder="Optional">
+                </div>
+            </div>
+            <div class="d-flex gap-2 mt-3">
+                <button class="btn btn-sm btn-success" onclick="saveBulkOfferEdit(${index})">Save Changes</button>
+                <button class="btn btn-sm btn-secondary" onclick="cancelBulkOfferEdit(${index})">Cancel</button>
+            </div>
+        </div>
+    `;
+
+    card.insertAdjacentHTML('afterend', editHTML);
+    card.style.display = 'none';
+};
+
+window.saveBulkOfferEdit = function(index) {
+    const offer = pendingBulkOffers[index];
+
+    offer.airline = document.getElementById(`editAirline_${index}`).value.trim() || offer.airline || 'Air Arabia';
+    offer.depCode = document.getElementById(`editDepCode_${index}`).value.toUpperCase().trim() || offer.depCode;
+    offer.destCode = document.getElementById(`editDestCode_${index}`).value.toUpperCase().trim() || offer.destCode;
+    offer.depCity = document.getElementById(`editDepCity_${index}`).value.trim() || offer.depCity;
+    offer.destCity = document.getElementById(`editDestCity_${index}`).value.trim() || offer.destCity;
+    offer.date = document.getElementById(`editDate_${index}`).value || offer.date;
+    offer.time = document.getElementById(`editDepTime_${index}`).value || offer.time;
+    offer.arrivalTime = document.getElementById(`editArrTime_${index}`).value || offer.arrivalTime;
+    offer.flightNum = document.getElementById(`editFlightNum_${index}`).value.toUpperCase().trim() || offer.flightNum;
+    offer.baggage = document.getElementById(`editBaggage_${index}`).value.trim() || offer.baggage;
+    offer.stops = document.getElementById(`editStops_${index}`).value.trim();
+    offer.pkr = document.getElementById(`editPkr_${index}`).value || offer.pkr;
+    offer.aed = document.getElementById(`editAed_${index}`).value || Math.round(Number(offer.pkr) / 77).toString();
+    offer.purchaseRate = document.getElementById(`editPurchaseRate_${index}`).value.trim() || offer.purchaseRate || '';
+
+    if (!offer.purchaseRate && offer.pkr) {
+        offer.purchaseRate = offer.pkr;
+    }
+
+    const cityMap = {
+        "PEW": "Peshawar", "SHJ": "Sharjah", "LHE": "Lahore", "DMM": "Dammam",
+        "DXB": "Dubai", "JED": "Jeddah", "ISB": "Islamabad", "KHI": "Karachi",
+        "MUX": "Multan", "SKT": "Sialkot"
+    };
+
+    if (!offer.depCity) offer.depCity = cityMap[offer.depCode] || offer.depCode;
+    if (!offer.destCity) offer.destCity = cityMap[offer.destCode] || offer.destCode;
+
+    const editForm = document.getElementById(`editOffersForm_${index}`);
+    if (editForm) editForm.remove();
+
+    renderBulkApprovalList();
+    alert('✅ Offer updated in approval list.');
+};
+
+window.cancelBulkOfferEdit = function(index) {
+    const editForm = document.getElementById(`editOffersForm_${index}`);
+    if (editForm) editForm.remove();
+    const card = document.getElementById(`card_${index}`);
+    if (card) card.style.display = 'block';
+};
+
+window.confirmBulkUpload = function() {
+    const checkboxes = document.querySelectorAll('.offer-checkbox:checked');
+    if (checkboxes.length === 0) {
+        alert("Please select at least one offer to upload.");
+        return;
+    }
+
+    const selectedIndices = Array.from(checkboxes).map(cb => parseInt(cb.getAttribute('data-index')));
+    const offersToUpload = selectedIndices.map(i => pendingBulkOffers[i]);
+
+    // Disable button and show loading
+    const modalElement = document.getElementById('bulkApprovalModal');
+    const uploadBtn = modalElement.querySelector('button[onclick="confirmBulkUpload()"]');
+    uploadBtn.disabled = true;
+    uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Uploading...';
+
+    let uploadCount = 0;
+    let failCount = 0;
+    const uploadPromises = [];
+
+    offersToUpload.forEach((offer, idx) => {
+        const newOffer = {
+            airline: offer.airline,
+            depCode: offer.depCode,
+            destCode: offer.destCode,
+            depCity: offer.depCity,
+            destCity: offer.destCity,
+            date: offer.date,
+            time: offer.time,
+            arrivalTime: offer.arrivalTime,
+            flightNum: offer.flightNum,
+            baggage: offer.baggage,
+            stops: offer.stops,
+            pkr: offer.pkr,
+            aed: offer.aed,
+            purchaseRate: "",
+            uploadedBy: auth.currentUser ? (auth.currentUser.displayName || auth.currentUser.email.split('@')[0].toUpperCase()) : "Admin",
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        const uploadPromise = db.collection("offers").add(newOffer)
+            .then((docRef) => {
+                uploadCount++;
+                console.log(`✓ Offer ${idx + 1} uploaded with ID: ${docRef.id}`);
+                
+                const nameSignature = auth.currentUser ? auth.currentUser.email.split('@')[0].toUpperCase() : "ADMIN";
+                if (nameSignature === "FAZAL0WAHID") nameSignature = "FAZAL";
+                
+                addSystemLog('ADD', nameSignature, `Bulk published: ${newOffer.depCode} → ${newOffer.destCode} on ${newOffer.date}`);
+                return true;
+            })
+            .catch((error) => {
+                failCount++;
+                console.error(`❌ Error uploading offer ${idx + 1}:`, error);
+                return false;
+            });
+
+        uploadPromises.push(uploadPromise);
+    });
+
+    // Wait for all uploads to complete
+    Promise.all(uploadPromises).then(() => {
+        console.log(`Upload complete: ${uploadCount} success, ${failCount} failed`);
+        
+        // Close modal
+        if (modalElement && typeof bootstrap !== 'undefined') {
+            const modal = bootstrap.Modal.getInstance(modalElement);
+            if (modal) modal.hide();
+        }
+
+        // Show success message
+        setTimeout(() => {
+            alert(`✅ Successfully uploaded ${uploadCount} flight offer(s)!${failCount > 0 ? ` (⚠️ ${failCount} failed - check console)` : ''}`);
+            
+            // Clear the form
+            document.getElementById('smartPasteBox').value = '';
+            pendingBulkOffers = [];
+            
+            // Refresh flight display
+            displayFlightOffers();
+        }, 500);
+    });
+}

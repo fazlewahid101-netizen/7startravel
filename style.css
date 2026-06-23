@@ -170,6 +170,249 @@ h1, h2, h3, .navbar-brand {
     border: 1px solid var(--gold) !important;
 }
 
+.modal-gradient-header {
+    background: linear-gradient(135deg, rgba(10,31,68,0.95), rgba(212,175,55,0.95));
+}
+
+.modal-gradient-success {
+    background: linear-gradient(135deg, rgba(37,150,65,0.95), rgba(212,175,55,0.95));
+}
+
+.btn-outline-gold {
+    border-color: var(--gold);
+    color: var(--navy);
+    background: rgba(212,175,55,0.1);
+}
+
+.btn-outline-gold:hover {
+    background: var(--gold);
+    color: #111;
+    border-color: var(--gold);
+}
+
+.nav-tabs .nav-link {
+    color: var(--navy);
+    border: 1px solid transparent;
+    border-radius: 12px;
+    transition: var(--transition);
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--white);
+    background: var(--gold);
+    border-color: rgba(212,175,55,0.35);
+    box-shadow: 0 8px 20px rgba(212,175,55,0.18);
+}
+
+.nav-tabs .nav-link:hover {
+    color: var(--navy);
+}
+
+.form-section-card {
+    background: rgba(255,255,255,0.96);
+    border: 1px solid rgba(212,175,55,0.18);
+}
+
+.bulk-offer-card {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px 16px;
+    border: 1px solid rgba(10,31,68,0.15);
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 15px 35px rgba(10,31,68,0.08);
+    padding: 16px;
+    margin-bottom: 14px;
+    align-items: start;
+}
+
+.bulk-offer-card:hover {
+    transform: translateY(-2px);
+}
+
+.bulk-offer-summary {
+    font-size: 0.92rem;
+    color: #3b4a64;
+    line-height: 1.45;
+}
+
+.bulk-offer-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: flex-start;
+    align-items: flex-end;
+}
+
+.bulk-offer-actions button {
+    min-width: 44px;
+    width: 100%;
+}
+
+@media (max-width: 1200px) {
+    .hero-section {
+        background-position: center 20%;
+    }
+    .hero-section .display-2 {
+        font-size: clamp(3.2rem, 5vw, 4.5rem);
+    }
+}
+
+@media (max-width: 992px) {
+    .hero-section {
+        min-height: 72vh;
+    }
+    .hero-section .display-2 {
+        font-size: 3rem;
+    }
+    .hero-section p.lead {
+        font-size: 1rem;
+    }
+    .btn-gold, .btn-navy, .btn-outline-gold {
+        padding: 10px 18px;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-section {
+        min-height: 65vh;
+        background-attachment: scroll;
+    }
+    .hero-section .display-2 {
+        font-size: 2.75rem;
+    }
+    .hero-section p.lead {
+        font-size: 0.98rem;
+    }
+    .navbar-nav {
+        margin-top: 10px;
+    }
+    .nav-link {
+        margin: 0 6px;
+    }
+    .whatsapp-float {
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+        bottom: 18px;
+        right: 18px;
+    }
+    .dest-card {
+        height: auto;
+        min-height: 260px;
+    }
+    .founder-card {
+        padding: 22px;
+    }
+    .founder-card .founder-avatar {
+        width: 90px;
+        height: 90px;
+    }
+    .flight-details-list li {
+        font-size: 0.92rem;
+    }
+    .feature-box, .service-card, .form-section-card {
+        padding: 22px;
+    }
+    .btn-gold, .btn-navy, .btn-outline-gold {
+        width: 100%;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero-section {
+        min-height: 60vh;
+    }
+    .hero-section .display-2 {
+        font-size: 2.2rem;
+        line-height: 1.1;
+    }
+    .hero-section p.lead {
+        font-size: 0.95rem;
+    }
+    .container,
+    .container-fluid {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+    .navbar-nav {
+        gap: 8px;
+    }
+    .nav-link {
+        padding: 0.5rem 0.75rem;
+    }
+    .hero-section .btn {
+        width: 100%;
+    }
+    .hero-section .btn + .btn {
+        margin-top: 10px;
+    }
+    .bulk-offer-card {
+        grid-template-columns: 1fr;
+    }
+    .bulk-offer-actions {
+        gap: 6px;
+    }
+    .bulk-offer-actions button {
+        flex: 1 1 100%;
+    }
+    .founder-card {
+        padding: 20px;
+    }
+    .founder-card .founder-avatar {
+        width: 80px;
+        height: 80px;
+    }
+    .founder-card h4 {
+        font-size: 1.1rem;
+    }
+    .feature-box,
+    .service-card,
+    .form-section-card,
+    .hot-offer-card,
+    .founder-card,
+    .dest-card {
+        padding: 18px;
+    }
+    .form-control,
+    .form-select,
+    textarea,
+    .input-group-text {
+        font-size: 0.95rem;
+    }
+    .modal-body {
+        padding: 1.3rem;
+    }
+    .modal-dialog {
+        margin: 1rem;
+    }
+    .btn-gold,
+    .btn-navy,
+    .btn-outline-gold {
+        width: 100%;
+    }
+    .btn-gold,
+    .btn-navy {
+        padding: 10px 18px;
+    }
+    .footer .social-icons a {
+        margin-right: 10px;
+    }
+    .whatsapp-float {
+        width: 46px;
+        height: 46px;
+        font-size: 22px;
+        right: 14px;
+        bottom: 14px;
+    }
+}
+
+.alert-success-soft {
+    background: rgba(37,150,65,0.12);
+    border-color: rgba(37,150,65,0.25);
+    color: #0a3720;
+}
+
 .navy-filter {
     filter: invert(13%) sepia(50%) saturate(3474%) hue-rotate(205deg) brightness(95%) contrast(97%);
 }
@@ -191,6 +434,38 @@ h1, h2, h3, .navbar-brand {
     display: block !important;
 }
 /* Hot Flight Offers Styling */
+.founder-card {
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.founder-card .founder-avatar {
+    width: 110px;
+    height: 110px;
+    margin: 0 auto 18px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 5px solid rgba(212, 175, 55, 0.18);
+}
+
+.founder-card .founder-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.founder-card h4 {
+    font-size: 1.25rem;
+}
+
+.founder-card p.small {
+    color: #5a6278;
+}
+
+.founder-card .btn-gold {
+    border-radius: 50px;
+}
+
 .hot-offer-card {
     border: 2px solid rgba(212, 175, 55, 0.2);
     border-radius: 15px;

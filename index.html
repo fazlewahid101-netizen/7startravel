@@ -1,15 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-HDV3JG0S0H"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-HDV3JG0S0H');
-</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>7 Star Travel Agency | Premium Luxury Travel Experiences</title>
@@ -201,23 +192,28 @@
   <!-- MODAL 2: ADD FLIGHT OFFER -->
     <div class="modal fade" id="addOfferModal" tabindex="-1" aria-labelledby="addOfferModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg text-dark">
-                <div class="modal-header bg-dark text-white py-3">
+            <div class="modal-content border-0 shadow-lg text-dark rounded-4 overflow-hidden">
+                <div class="modal-header modal-gradient-header text-white py-3">
                     <h5 class="modal-title fw-bold" id="addOfferModalLabel"><i class="fas fa-cloud-upload-alt me-2 gold-text"></i> Upload New Flight Deal</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
                     <form id="addOfferForm">
                         <!-- SMART PASTE BOX -->
-<div class="mb-4 p-3 rounded" style="background-color: #f8f9fa; border: 2px dashed #D4AF37;">
-    <label class="form-label fw-bold" style="color: #0A1F44;">
-        <i class="fas fa-magic me-2" style="color: #D4AF37;"></i>Fast Paste
+<div class="mb-4 p-4 rounded-4 shadow-sm form-section-card">
+    <label class="form-label fw-bold text-secondary mb-3 d-block">
+        <i class="fas fa-magic me-2 gold-text"></i>Paste your flight details below to auto-fill the offer form.
     </label>
-    <textarea id="smartPasteBox" class="form-control mb-2" rows="4" 
-        placeholder="Paste your flight details here..."></textarea>
-    <button type="button" class="btn btn-sm btn-outline-dark w-100 fw-bold" onclick="processMyFlight()">
-        Auto-Fill Form
-    </button>
+    <textarea id="smartPasteBox" class="form-control mb-3 rounded-3" rows="4" 
+        placeholder="Paste your flight details here (single format or bulk upload text)..."></textarea>
+    <div class="d-flex gap-2 flex-wrap">
+        <button type="button" class="btn btn-outline-gold flex-grow-1 fw-bold" onclick="processMyFlight()">
+            <i class="fas fa-fill-drip me-1"></i> Auto-Fill Form
+        </button>
+        <button type="button" class="btn btn-gold flex-grow-1 fw-bold" onclick="processBulkFlights()">
+            <i class="fas fa-table me-1"></i> Bulk Upload
+        </button>
+    </div>
 </div>
 <hr class="mb-3">
                         <div class="row">
@@ -305,6 +301,38 @@
         </div>
     </div>
 
+    <!-- MODAL 3: BULK UPLOAD APPROVAL -->
+    <div class="modal fade" id="bulkApprovalModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow-lg text-dark rounded-4 overflow-hidden">
+                <div class="modal-header modal-gradient-success text-white py-3">
+                    <h5 class="modal-title fw-bold" id="bulkApprovalLabel">
+                        <i class="fas fa-check-circle me-2"></i> Approve Bulk Flight Upload
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="alert alert-success-soft mb-3 d-flex align-items-center gap-2">
+                        <i class="fas fa-info-circle"></i>
+                        <div>
+                            <strong><span id="bulkOfferCount">0</span></strong> flight offer(s) ready to upload. Select the ones you want to publish.
+                        </div>
+                    </div>
+                    
+                    <div id="bulkOffersList" class="bulk-offer-list" style="max-height: 420px; overflow-y: auto;">
+                        <!-- Offers will be listed here -->
+                    </div>
+                </div>
+                <div class="modal-footer border-top pt-3">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success fw-bold" onclick="confirmBulkUpload()">
+                        <i class="fas fa-cloud-upload-alt me-1"></i> Approve & Upload Selected
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ABOUT SECTION -->
     <section id="about" class="py-5 bg-white">
         <div class="container py-5">
@@ -332,25 +360,42 @@
             </div>
             <div class="row g-4 justify-content-center">
                 <!-- Founder 1 -->
-                <div class="col-md-5" data-aos="flip-left">
+                <div class="col-md-4" data-aos="flip-left">
                     <div class="founder-card p-4 text-center bg-white shadow-sm border-gold">
-                        <div class="founder-icon mb-3"><i class="fas fa-user-tie fa-3x gold-text"></i></div>
-                        <h4>Fazal Wahid</h4>
-                        <p class="text-muted">Founder & Travel Consultant</p>
-                        <p class="small"><i class="fas fa-phone gold-text"></i> +971504847224</p>
-                        <p class="small"><i class="fas fa-envelope gold-text"></i> fazlewahid101@gmail.com</p>
+                        <div class="founder-avatar mb-3">
+                            <img src="./IMAGES/fazal.jpg" alt="Fazal Wahid" class="img-fluid rounded-circle">
+                        </div>
+                        <h4 class="mb-1">Fazal Wahid</h4>
+                        <p class="text-muted mb-2">Founder</p>
+                        <p class="small mb-1"><i class="fas fa-phone gold-text me-2"></i>+971 50 484 7224</p>
+                        <p class="small mb-3"><i class="fas fa-envelope gold-text me-2"></i>fazlewahid101@gmail.com</p>
                         <a href="https://wa.me/971504847224" class="btn btn-gold btn-sm w-100 mt-2">Message on WhatsApp</a>
                     </div>
                 </div>
                 <!-- Founder 2 -->
-                <div class="col-md-5" data-aos="flip-right">
+                <div class="col-md-4" data-aos="flip-up">
                     <div class="founder-card p-4 text-center bg-white shadow-sm border-gold">
-                        <div class="founder-icon mb-3"><i class="fas fa-briefcase fa-3x gold-text"></i></div>
-                        <h4>Kamran Khan</h4>
-                        <p class="text-muted">Co-Founder & Operations Manager</p>
-                        <p class="small"><i class="fas fa-phone gold-text"></i> +971504196465</p>
-                        <p class="small">&nbsp;</p>
+                        <div class="founder-avatar mb-3">
+                            <img src="./IMAGES/kamran.jpg" alt="Kamran Khan" class="img-fluid rounded-circle">
+                        </div>
+                        <h4 class="mb-1">Kamran Khan</h4>
+                        <p class="text-muted mb-2">Co-Founder & Operations Manager</p>
+                        <p class="small mb-1"><i class="fas fa-phone gold-text me-2"></i>+971 50 419 6465</p>
+                        <p class="small mb-3"><i class="fas fa-envelope gold-text me-2"></i>shinekamran0072@gmail.com</p>
                         <a href="https://wa.me/971504196465" class="btn btn-gold btn-sm w-100 mt-2">Message on WhatsApp</a>
+                    </div>
+                </div>
+                <!-- Founder 3 -->
+                <div class="col-md-4" data-aos="flip-right">
+                    <div class="founder-card p-4 text-center bg-white shadow-sm border-gold">
+                        <div class="founder-avatar mb-3">
+                            <img src="./IMAGES/matee.jpeg" alt="Matee Ullah" class="img-fluid rounded-circle">
+                        </div>
+                        <h4 class="mb-1">Matee Ullah</h4>
+                        <p class="text-muted mb-2">Co-Founder & Travel Consultant</p>
+                        <p class="small mb-1"><i class="fas fa-phone gold-text me-2"></i>+92 318 941 9091</p>
+                        <p class="small mb-3"><i class="fas fa-envelope gold-text me-2"></i>matee128ve@gmail.com</p>
+                        <a href="https://wa.me/923189419091" class="btn btn-gold btn-sm w-100 mt-2">Message on WhatsApp</a>
                     </div>
                 </div>
             </div>
@@ -828,8 +873,8 @@
     <!-- MODAL 3: MODIFY FLIGHT OFFER -->
     <div class="modal fade" id="editOfferModal" tabindex="-1" aria-labelledby="editOfferModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg text-dark">
-                <div class="modal-header bg-dark text-white py-3">
+            <div class="modal-content border-0 shadow-lg text-dark rounded-4 overflow-hidden">
+                <div class="modal-header modal-gradient-header text-white py-3">
                     <h5 class="modal-title fw-bold" id="editOfferModalLabel"><i class="fas fa-edit me-2 gold-text"></i> Modify Flight Deal</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -837,13 +882,13 @@
                     <form id="editOfferForm">
                         <input type="hidden" id="editOfferId">
                         
-                        <div class="mb-4 p-3 rounded" style="background-color: #f8f9fa; border: 2px dashed #D4AF37;">
-                            <label class="form-label fw-bold" style="color: #0A1F44;">
-                                <i class="fas fa-magic me-2" style="color: #D4AF37;"></i>Fast Paste
+                        <div class="mb-4 p-4 rounded-4 shadow-sm form-section-card">
+                            <label class="form-label fw-bold text-secondary mb-2">
+                                <i class="fas fa-magic me-2 gold-text"></i>Fast Paste
                             </label>
-                            <textarea id="editSmartPasteBox" class="form-control mb-2" rows="4" placeholder="Paste your flight details here..."></textarea>
-                            <button type="button" class="btn btn-sm btn-outline-dark w-100 fw-bold" onclick="processEditFlight()">
-                                Auto-Fill Edit Form
+                            <textarea id="editSmartPasteBox" class="form-control mb-3 rounded-3" rows="4" placeholder="Paste your flight details here..."></textarea>
+                            <button type="button" class="btn btn-outline-gold w-100 fw-bold" onclick="processEditFlight()">
+                                <i class="fas fa-magic me-1"></i> Auto-Fill Edit Form
                             </button>
                         </div>
 
