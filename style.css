@@ -236,6 +236,39 @@ section {
     border-color: var(--gold);
 }
 
+.top-bar {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    font-size: 0.92rem;
+}
+
+.top-bar-link,
+.top-bar-phone {
+    color: rgba(255, 255, 255, 0.92);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.top-bar-link:hover,
+.top-bar-phone:hover {
+    color: #ffd966;
+}
+
+.top-bar-phone {
+    background: rgba(255, 255, 255, 0.12);
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.support-link {
+    transition: color 0.25s ease;
+}
+
+.support-link:hover {
+    color: var(--gold) !important;
+    text-decoration: none !important;
+}
+
 .admin-control-panel {
     background: rgba(255, 255, 255, 0.95);
     border: 1px solid rgba(10, 31, 68, 0.12);
