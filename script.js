@@ -155,7 +155,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 phoneInput.value = fullNumber;
             }
 
-            emailjs.sendForm('service_csyas49', 'template_opswoyq', this)
+            emailjs.sendForm('service_ygjzruc', 'template_opswoyq', this)
             .then(() => {
                 alert("✅ Flight inquiry sent successfully!");
                 flightForm.reset();
@@ -173,7 +173,7 @@ document.addEventListener('DOMContentLoaded', function () {
         contactForm.addEventListener('submit', function (e) {
             e.preventDefault();
 
-            emailjs.sendForm('service_csyas49', 'template_3bghzhs', this)
+            emailjs.sendForm('service_ygjzruc', 'template_3bghzhs', this)
             .then(() => {
                 alert("Message sent successfully!");
                 contactForm.reset();
